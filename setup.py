@@ -39,5 +39,5 @@ if __name__ == "__main__":
         platforms="any",
         include_package_data=True,
         packages=find_packages(exclude=("tests", "docs")),
-        install_requires=["requests==2.11.1"],
+        install_requires=["jmespath==0.9.0", "requests==2.11.1"],
     )

@@ -1,6 +1,7 @@
 alabaster
 coverage
 flake8
+jmespath
 pytest
 requests
 sphinx
