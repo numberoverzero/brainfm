@@ -10,7 +10,7 @@ with open(os.path.join(HERE, "README.rst")) as f:
 
 
 def get_version():
-    with open(os.path.join(HERE, "brainfm.py")) as f:
+    with open(os.path.join(HERE, "brainfm/__init__.py")) as f:
         for line in f:
             if line.startswith("__version__"):
                 return eval(line.split("=")[-1])
@@ -38,6 +38,19 @@ if __name__ == "__main__":
         keywords="brainfm api",
         platforms="any",
         include_package_data=True,
-        py_modules=["brainfm"],
-        install_requires=["jmespath==0.9.0", "requests==2.11.1"],
+        packages=[
+            "brainfm",
+            "brainfm.main"
+        ],
+        entry_points={
+            "console_scripts": [
+                "brain = brainfm.main.cli:main"
+            ]
+        },
+        install_requires=[
+            "click==6.6",
+            "jmespath==0.9.0",
+            "requests==2.11.1",
+            "terminaltables==3.1.0"
+        ],
     )

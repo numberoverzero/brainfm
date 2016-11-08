@@ -32,6 +32,51 @@ Now, open the stream using that token::
 
     https://stream.brain.fm/?tkn=63f4b59b-93f4-45e6-b0c2-eb6b1582fb96
 
+=====
+ CLI
+=====
+
+Needs a credentials file in ~/.brainfm/config with the format::
+
+    {
+        "email": "your@email.here",
+        "password": "hunter2"
+    }
+
+Usage::
+
+    $ brain ls
+    +Available Stations------------+---------------------------+
+    | id  | name                   | canonical                 |
+    +-----+------------------------+---------------------------+
+    | 34  | Relaxed Focus          | explore.relaxed           |
+    | 53  | Beach Focus            | explore.focus.beach       |
+    | 54  | Chimes & Bowls Focus   | explore.focus.bells       |
+    | 55  | Electronic Music Focus | explore.focus.electronic  |
+    | ... | ...                    | ...                       |
+    | 262 | Wind Relax             | explore.relax.wind        |
+    | 300 | Cinematic Music Focus  | explore.focus.cinematic   |
+    +-----+------------------------+---------------------------+
+
+    $ brain gs -i 60
+    {
+        "canonical_name": "explore.focus.wind",
+        "name": "Wind Focus",
+        "station_id": 60
+    }
+
+    $ brain gt -i 60
+    {
+        "group": "FOCUS",
+        "name": "Wind Focus",
+        "session_id": 143,
+        "session_token": "3ff0eab0-a5f6-11e6-a5c2-f11c700a6178",
+        "station_id": 60
+    }
+
+    $ brain play 60
+    # opens a browser at:
+    #   https://stream.brain.fm/?tkn=3ff0eab0-a5f6-11e6-a5c2-f11c700a6178
 
 ============
  User-Agent

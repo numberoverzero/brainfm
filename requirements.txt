@@ -1,9 +1,11 @@
 alabaster
+click
 coverage
 flake8
 jmespath
 pytest
 requests
 sphinx
+terminaltables
 tox
 wheel
