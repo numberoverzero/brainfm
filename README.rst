@@ -33,8 +33,8 @@ Now, open the stream using that token::
  User-Agent
 ============
 
-By default the user agent is "github.com/numberoverzero/brain.fm" and the project version.  There is also a packaged
-browser-like user-agent:
+By default the user agent is ``github.com/numberoverzero/brain.fm`` followed by the project ``__version__``.
+There is also a packaged browser-like user-agent:
 
 .. code-block:: pycon
 
