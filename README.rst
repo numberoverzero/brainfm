@@ -1,11 +1,15 @@
 Unofficial Brain.fm Python Client
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+(very few commands implemented)
+
 ============
  Quickstart
 ============
 
-Not on pip yet, very few commands implemented.
+::
+
+    pip install brainfm
 
 .. code-block:: pycon
 
