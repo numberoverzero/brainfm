@@ -1,5 +1,7 @@
+# import http.client
 from pathlib import Path
 from brainfm import Connection
+# http.client.HTTPConnection.debuglevel = 1
 
 config_location = Path("~/.brainfm/config")
 with config_location.expanduser().open() as f:
@@ -9,7 +11,5 @@ with config_location.expanduser().open() as f:
         config[key.strip()] = value.strip()
 
 
-connection = Connection()
-connection.login(config["email"], config["password"])
-connection.load_operations()
-print(connection.get_stations())
+connection = Connection(**config)
+print(connection.get_token(station_id=55))
