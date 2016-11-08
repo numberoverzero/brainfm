@@ -1,7 +1,7 @@
 """ Setup file """
 import os
 
-from setuptools import find_packages, setup
+from setuptools import setup
 
 
 HERE = os.path.abspath(os.path.dirname(__file__))
@@ -38,6 +38,6 @@ if __name__ == "__main__":
         keywords="brainfm api",
         platforms="any",
         include_package_data=True,
-        packages=find_packages(exclude=("tests", "docs")),
+        py_modules=["brainfm"],
         install_requires=["jmespath==0.9.0", "requests==2.11.1"],
     )
