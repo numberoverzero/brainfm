@@ -1,0 +1,7 @@
+alabaster
+coverage
+flake8
+pytest
+requests
+sphinx
+tox
