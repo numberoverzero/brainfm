@@ -1,7 +1,9 @@
-Unofficial Brain.fm Python Client
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Unofficial Brain.fm Python Client (3.5+)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-(very few commands implemented)
+Very few commands are currently implemented.  Please open an issue if there's a specific command you need.  If you're up for debugging their interesting wire format, additional details make it easier to implement your request.
+
+This client requires Python 3.5+.
 
 ============
  Quickstart
