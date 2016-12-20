@@ -60,14 +60,14 @@ Usage::
     | 300 | Cinematic Music Focus  | explore.focus.cinematic   |
     +-----+------------------------+---------------------------+
 
-    $ brain gs -id 60
+    $ brain gs 60
     {
         "canonical_name": "explore.focus.wind",
         "name": "Wind Focus",
         "station_id": 60
     }
 
-    $ brain gt -id 60
+    $ brain gt 60
     {
         "group": "FOCUS",
         "name": "Wind Focus",

@@ -64,7 +64,7 @@ def ls():
 
 
 @cli.command()
-@click.option("--station-id", "-id", help="Station ID", required=True)
+@click.argument("station_id")
 def gs(station_id):
     """Get a single station"""
     try:
@@ -80,8 +80,9 @@ def gs(station_id):
 
 
 @cli.command()
-@click.option("--station-id", "-id", help="Station ID", required=True)
+@click.argument("station_id")
 def gt(station_id):
+    """Get a station token"""
     try:
         output = client.get_token(station_id=station_id)
     except requests.exceptions.HTTPError as e:
@@ -97,6 +98,7 @@ def gt(station_id):
 @cli.command()
 @click.argument("station_id")
 def play(station_id):
+    """Play a station stream"""
     try:
         token = client.get_token(station_id=station_id)
     except requests.exceptions.HTTPError as e:
