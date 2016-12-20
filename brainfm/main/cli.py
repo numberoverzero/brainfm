@@ -138,6 +138,6 @@ def play(station_id, player=None):
         webbrowser.open_new_tab(url)
     else:
         cmd = shlex.split(player) + [url]
-        subprocess.Popen(cmd)
+        subprocess.run(cmd)
 
 main = cli
