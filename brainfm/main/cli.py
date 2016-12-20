@@ -97,6 +97,25 @@ def gt(station_id):
 
 @cli.command()
 @click.argument("station_id")
+def url(station_id):
+    """Get a station URL"""
+    try:
+        token = client.get_token(station_id=station_id)
+    except requests.exceptions.HTTPError as e:
+        if e.response.status_code == 404:
+            print(json.dumps(
+                {
+                    "code": "UnknownStationID",
+                    "error": "Unknown station {!r}".format(station_id)},
+                indent=4, sort_keys=True))
+            sys.exit(1)
+        else:
+            raise e
+    print("https://stream.brain.fm/?tkn=" + token["session_token"])
+
+
+@cli.command()
+@click.argument("station_id")
 def play(station_id):
     """Play a station stream"""
     try:
