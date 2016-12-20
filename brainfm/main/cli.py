@@ -6,6 +6,8 @@ import jmespath
 import json
 import pathlib
 import requests
+import shlex
+import subprocess
 import sys
 import terminaltables
 import webbrowser
@@ -116,7 +118,8 @@ def url(station_id):
 
 @cli.command()
 @click.argument("station_id")
-def play(station_id):
+@click.option("--player", help="Command used to play the stream")
+def play(station_id, player=None):
     """Play a station stream"""
     try:
         token = client.get_token(station_id=station_id)
@@ -130,7 +133,11 @@ def play(station_id):
             sys.exit(1)
         else:
             raise e
-    webbrowser.open_new_tab(
-        "https://stream.brain.fm/?tkn=" + token["session_token"])
+    url = "https://stream.brain.fm/?tkn=" + token["session_token"]
+    if player is None:
+        webbrowser.open_new_tab(url)
+    else:
+        cmd = shlex.split(player) + [url]
+        subprocess.Popen(cmd)
 
 main = cli
