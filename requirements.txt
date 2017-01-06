@@ -8,4 +8,5 @@ requests
 sphinx
 terminaltables
 tox
+twine
 wheel
