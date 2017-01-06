@@ -5,7 +5,6 @@ import click
 import jmespath
 import json
 import pathlib
-import requests
 import shlex
 import subprocess
 import sys
@@ -18,31 +17,39 @@ CACHE_PATH.mkdir(parents=True, exist_ok=True)
 STATIONS_PATTERN = jmespath.compile("[*].[station_id, name, canonical_name]")
 
 # TODO graceful failure when config is missing/invalid
-with CONFIG_PATH.open() as fp:
-    config = json.load(fp)
+with CONFIG_PATH.open() as config_file:
+    config = json.load(config_file)
 
 client = brainfm.Connection(config["email"], config["password"])
 
 # TODO expire cached values
 if (CACHE_PATH / "svu").exists():
-    with (CACHE_PATH / "svu").open() as fp:
-        client._svu = fp.read()
+    with (CACHE_PATH / "svu").open() as svu_file:
+        client._svu = svu_file.read()
 else:
-    with (CACHE_PATH / "svu").open(mode="w") as fp:
-        fp.write(client.svu)
+    with (CACHE_PATH / "svu").open(mode="w") as svu_file:
+        svu_file.write(client.svu)
 
 cached = {
     "stations": None
 }
 
 if (CACHE_PATH / "stations").exists():
-    with (CACHE_PATH / "stations").open() as fp:
-        cached["stations"] = json.load(fp)
+    with (CACHE_PATH / "stations").open() as stations_file:
+        cached["stations"] = json.load(stations_file)
+
+
+def render(d, is_error=False):
+    print(json.dumps(d, indent=4, sort_keys=True))
+    if is_error:
+        sys.exit(1)
 
 
 @click.group()
+@click.version_option()
 def cli():
     pass
+
 
 @cli.command()
 def svu():
@@ -69,75 +76,40 @@ def ls():
 @click.argument("station_id")
 def gs(station_id):
     """Get a single station"""
-    try:
-        output = client.get_station(station_id=station_id)
-    except requests.exceptions.HTTPError as e:
-        if e.response.status_code == 404:
-            output = {
-                "code": "UnknownStationID",
-                "error": "Unknown station {!r}".format(station_id)}
-        else:
-            raise e
-    print(json.dumps(output, indent=4, sort_keys=True))
+    station = client.get_station(station_id=station_id)
+    render(station)
 
 
 @cli.command()
 @click.argument("station_id")
 def gt(station_id):
     """Get a station token"""
-    try:
-        output = client.get_token(station_id=station_id)
-    except requests.exceptions.HTTPError as e:
-        if e.response.status_code == 404:
-            output = {
-                "code": "UnknownStationID",
-                "error": "Unknown station {!r}".format(station_id)}
-        else:
-            raise e
-    print(json.dumps(output, indent=4, sort_keys=True))
+    token = client.get_token(station_id=station_id)
+    render(token)
 
 
 @cli.command()
 @click.argument("station_id")
 def url(station_id):
     """Get a station URL"""
-    try:
-        token = client.get_token(station_id=station_id)
-    except requests.exceptions.HTTPError as e:
-        if e.response.status_code == 404:
-            print(json.dumps(
-                {
-                    "code": "UnknownStationID",
-                    "error": "Unknown station {!r}".format(station_id)},
-                indent=4, sort_keys=True))
-            sys.exit(1)
-        else:
-            raise e
+    token = client.get_token(station_id=station_id)
+    if isinstance(token, brainfm.Error):
+        render(token, is_error=True)
     print("https://stream.brain.fm/?tkn=" + token["session_token"])
 
 
 @cli.command()
 @click.argument("station_id")
-@click.option("--player", help="Command used to play the stream")
+@click.option("--player", help="Command used to play the stream.  Defaults to browser.")
 def play(station_id, player=None):
     """Play a station stream"""
-    try:
-        token = client.get_token(station_id=station_id)
-    except requests.exceptions.HTTPError as e:
-        if e.response.status_code == 404:
-            print(json.dumps(
-                {
-                    "code": "UnknownStationID",
-                    "error": "Unknown station {!r}".format(station_id)},
-                indent=4, sort_keys=True))
-            sys.exit(1)
-        else:
-            raise e
-    url = "https://stream.brain.fm/?tkn=" + token["session_token"]
-    if player is None:
-        webbrowser.open_new_tab(url)
+    token = client.get_token(station_id=station_id)
+    if isinstance(token, brainfm.Error):
+        render(token, is_error=True)
+    stream_url = "https://stream.brain.fm/?tkn=" + token["session_token"]
+    if player:
+        subprocess.run(shlex.split(player) + [stream_url])
     else:
-        cmd = shlex.split(player) + [url]
-        subprocess.run(cmd)
+        webbrowser.open_new_tab(stream_url)
 
 main = cli
