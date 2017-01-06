@@ -2,13 +2,23 @@ import jmespath
 import operator
 import requests
 
-__version__ = "0.1.2"
+from requests import HTTPError
+from typing import Dict, List
+
+
+__version__ = "0.1.3"
 
 # http://www.useragentstring.com/index.php?id=19841
 BROWSER = ("Mozilla/5.0 (Windows NT 6.1) "
            "AppleWebKit/537.36 (KHTML, like Gecko) "
            "Chrome/41.0.2228.0 Safari/537.36")
 DEFAULT_USER_AGENT = "github.com/numberoverzero/brainfm v" + __version__
+
+
+# subclass because isinstance doesn't worry about a key collision in a response object.
+# for example, checking for "error" isn't safe if the server ever uses that for a real field.
+class Error(dict):
+    pass
 
 
 class Connection:
@@ -87,9 +97,28 @@ def param_name(p):
     return p.get("alias", p["name"])
 
 
+def on_exception(cls, extra_condition=None):
+    if extra_condition is None:
+        def extra_condition(_):
+            return True
+    return lambda error: (
+        isinstance(error, cls) and
+        extra_condition(error)
+    )
+
+
+def render_template(prototype):
+    def apply(_, wire_kwargs):
+        error = Error()
+        for key, value in prototype.items():
+            error[key] = value.format(**wire_kwargs)
+        return error
+    return apply
+
+
 def build_operation(name):
     spec = operation_map[name]
-    parameters = spec["parameters"]
+    parameters = spec["parameters"]  # type: List[Dict]
 
     def operation(self, **kwargs):
         # 0. Validate parameters
@@ -116,8 +145,14 @@ def build_operation(name):
                     default = default()
                 wire_kwargs[param["name"]] = default
 
-                    # 2. Send request through connection
-        resp = self._rtecm(spec, wire_kwargs)
+        # 2. Send request through connection
+        try:
+            resp = self._rtecm(spec, wire_kwargs)
+        except Exception as error:
+            for check, render in spec["exceptions"].items():
+                if check(error):
+                    return render(error, wire_kwargs)
+            raise error
 
         # 3. Unpack response if the operation has one
         if spec["response"]:
@@ -127,11 +162,11 @@ def build_operation(name):
     if parameters:
         doc += "\n"
         tpl = "\n:param {type} {name}: {required}"
-        for param in sorted(parameters, key=operator.itemgetter("name")):
+        for parameter in sorted(parameters, key=operator.itemgetter("name")):
             doc += tpl.format(
-                type=param["type"].__name__,
-                name=param_name(param),
-                required="Required" if param["required"] else "(Optional)"
+                type=parameter["type"].__name__,
+                name=param_name(parameter),
+                required="Required" if parameter["required"] else "(Optional)"
             )
     operation.__doc__ = doc
     return operation
@@ -171,7 +206,8 @@ operation_map = {
                 "type": str
             }
         ],
-        "response": None
+        "response": None,
+        "exceptions": {}
     },
     # setTestCompleted  # unknown; not seen
     # setFeedback
@@ -180,7 +216,8 @@ operation_map = {
         "method": "post",
         "parameters": [],
         "response": jmespath.compile(
-            "*[*].{station_id:id, name:name, canonical_name:string_id}[]")
+            "*[*].{station_id:id, name:name, canonical_name:string_id}[]"),
+        "exceptions": {}
     },
     # getMainStations  # not implemented for now, use get_stations
     # getMainStations_NoPlans  # not implemented for now, use get_stations
@@ -197,7 +234,13 @@ operation_map = {
             }
         ],
         "response": jmespath.compile(
-            "{station_id: id, name: name, canonical_name: string_id}")
+            "{station_id: id, name: name, canonical_name: string_id}"),
+        "exceptions": {
+            on_exception(HTTPError, lambda e: e.response.status_code == 404):
+            render_template({
+                "code": "UnknownStationID",
+                "error": "Unknown station {id}"})
+        }
     },
     "get_token": {
         "name": "getTokenJSON",
@@ -225,13 +268,19 @@ operation_map = {
         ],
         "response": jmespath.compile(
             "{session_id: id, group: group, name: name, "
-            "station_id: station_id, session_token: token}")
+            "station_id: station_id, session_token: token}"),
+        "exceptions": {
+            on_exception(HTTPError, lambda e: e.response.status_code == 404):
+            render_template({
+                "code": "UnknownStationID",
+                "error": "Unknown station {sid}"})
+        }
     },
     # testToken  # unknown; not seen
     # getFeedbackQueueJSON  # unknown; not seen
     # setDisclaimerAccepted  # unknown; not seen
 }
 
-for name in operation_map:
-    func = build_operation(name)
-    setattr(Connection, name, func)
+for operation_name in operation_map:
+    func = build_operation(operation_name)
+    setattr(Connection, operation_name, func)
