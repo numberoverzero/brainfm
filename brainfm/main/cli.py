@@ -6,6 +6,8 @@ import jmespath
 import json
 import pathlib
 import requests
+import shlex
+import subprocess
 import sys
 import terminaltables
 import webbrowser
@@ -64,7 +66,7 @@ def ls():
 
 
 @cli.command()
-@click.option("--station-id", "-id", help="Station ID", required=True)
+@click.argument("station_id")
 def gs(station_id):
     """Get a single station"""
     try:
@@ -80,8 +82,9 @@ def gs(station_id):
 
 
 @cli.command()
-@click.option("--station-id", "-id", help="Station ID", required=True)
+@click.argument("station_id")
 def gt(station_id):
+    """Get a station token"""
     try:
         output = client.get_token(station_id=station_id)
     except requests.exceptions.HTTPError as e:
@@ -96,7 +99,8 @@ def gt(station_id):
 
 @cli.command()
 @click.argument("station_id")
-def play(station_id):
+def url(station_id):
+    """Get a station URL"""
     try:
         token = client.get_token(station_id=station_id)
     except requests.exceptions.HTTPError as e:
@@ -109,7 +113,31 @@ def play(station_id):
             sys.exit(1)
         else:
             raise e
-    webbrowser.open_new_tab(
-        "https://stream.brain.fm/?tkn=" + token["session_token"])
+    print("https://stream.brain.fm/?tkn=" + token["session_token"])
+
+
+@cli.command()
+@click.argument("station_id")
+@click.option("--player", help="Command used to play the stream")
+def play(station_id, player=None):
+    """Play a station stream"""
+    try:
+        token = client.get_token(station_id=station_id)
+    except requests.exceptions.HTTPError as e:
+        if e.response.status_code == 404:
+            print(json.dumps(
+                {
+                    "code": "UnknownStationID",
+                    "error": "Unknown station {!r}".format(station_id)},
+                indent=4, sort_keys=True))
+            sys.exit(1)
+        else:
+            raise e
+    url = "https://stream.brain.fm/?tkn=" + token["session_token"]
+    if player is None:
+        webbrowser.open_new_tab(url)
+    else:
+        cmd = shlex.split(player) + [url]
+        subprocess.run(cmd)
 
 main = cli

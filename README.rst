@@ -60,14 +60,14 @@ Usage::
     | 300 | Cinematic Music Focus  | explore.focus.cinematic   |
     +-----+------------------------+---------------------------+
 
-    $ brain gs -i 60
+    $ brain gs 60
     {
         "canonical_name": "explore.focus.wind",
         "name": "Wind Focus",
         "station_id": 60
     }
 
-    $ brain gt -i 60
+    $ brain gt 60
     {
         "group": "FOCUS",
         "name": "Wind Focus",
@@ -84,7 +84,7 @@ Usage::
  User-Agent
 ============
 
-By default the user agent is ``github.com/numberoverzero/brain.fm`` followed by the project ``__version__``.
+By default the user agent is ``github.com/numberoverzero/brainfm`` followed by the project ``__version__``.
 There is also a packaged browser-like user-agent:
 
 .. code-block:: pycon
