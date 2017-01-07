@@ -221,7 +221,21 @@ operation_map = {
     },
     # getMainStations  # not implemented for now, use get_stations
     # getMainStations_NoPlans  # not implemented for now, use get_stations
-    # getStationsByID  # unknown; not seen
+    "get_stations_by_id": {
+        "name": "getStationsByID",
+        "method": "post",
+        "parameters": [
+            {
+                "name": "pid",
+                "alias": "parent_id",
+                "required": True,
+                "type": int
+            }
+        ],
+        "response": jmespath.compile(
+            "{stations: stations}"),
+        "exceptions": {}
+    },
     "get_station": {
         "name": "getStation",
         "method": "post",
@@ -234,7 +248,7 @@ operation_map = {
             }
         ],
         "response": jmespath.compile(
-            "{station_id: id, name: name, canonical_name: string_id}"),
+            "{station_id: id, name: name, canonical_name: string_id, playable: player}"),
         "exceptions": {
             on_exception(HTTPError, lambda e: e.response.status_code == 404):
             render_template({
