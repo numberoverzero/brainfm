@@ -216,7 +216,7 @@ operation_map = {
         "method": "post",
         "parameters": [],
         "response": jmespath.compile(
-            "*[*].{station_id:id, name:name, canonical_name:string_id}[]"),
+            "*[*].{station_id: id, name: name, canonical_name: string_id, parent_id: parent_id}[]"),
         "exceptions": {}
     },
     # getMainStations  # not implemented for now, use get_stations
@@ -233,7 +233,7 @@ operation_map = {
             }
         ],
         "response": jmespath.compile(
-            "{stations: stations}"),
+            "stations[].{station_id: id, name: name, canonical_name: string_id, parent_id: parent_id}"),
         "exceptions": {}
     },
     "get_station": {
@@ -281,8 +281,7 @@ operation_map = {
             }
         ],
         "response": jmespath.compile(
-            "{session_id: id, group: group, name: name, "
-            "station_id: station_id, session_token: token}"),
+            "{session_id: id, group: group, name: name, station_id: station_id, session_token: token}"),
         "exceptions": {
             on_exception(HTTPError, lambda e: e.response.status_code == 404):
             render_template({
