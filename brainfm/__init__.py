@@ -6,7 +6,7 @@ from requests import HTTPError
 from typing import Dict, List
 
 
-__version__ = "0.2.0"
+__version__ = "0.2.1"
 
 # http://www.useragentstring.com/index.php?id=19841
 BROWSER = ("Mozilla/5.0 (Windows NT 6.1) "
