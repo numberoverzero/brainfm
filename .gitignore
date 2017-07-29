@@ -60,3 +60,4 @@ target/
 # Versioning
 .python-version
 .idea/
+.venv/
