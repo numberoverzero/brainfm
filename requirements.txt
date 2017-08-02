@@ -1,4 +1,3 @@
-alabaster
 click
 coverage
 flake8

@@ -24,19 +24,20 @@ client = brainfm.Connection(config["email"], config["password"])
 
 # TODO expire cached values
 if (CACHE_PATH / "svu").exists():
-    with (CACHE_PATH / "svu").open() as svu_file:
-        client._svu = svu_file.read()
-else:
-    with (CACHE_PATH / "svu").open(mode="w") as svu_file:
-        svu_file.write(client.svu)
+    client._svu = (CACHE_PATH / "svu").read_text().strip() or None
+# if cache didn't exist or was an empty file, Connection will re-fetch it.
+(CACHE_PATH / "svu").write_text(client.svu.strip())
 
 cached = {
     "stations": None
 }
 
 if (CACHE_PATH / "stations").exists():
-    with (CACHE_PATH / "stations").open() as stations_file:
-        cached["stations"] = json.load(stations_file)
+    try:
+        cached["stations"] = json.loads((CACHE_PATH / "stations").read_text())
+    except json.JSONDecodeError:
+        # Drop malformed file
+        (CACHE_PATH / "stations").unlink()
 
 
 def render(d, is_error=False):
@@ -62,8 +63,9 @@ def ls():
     """List available stations"""
     if not cached["stations"]:
         cached["stations"] = client.get_stations()
-        with (CACHE_PATH / "stations").open(mode="w") as fp:
-            json.dump(cached["stations"], fp, indent=4, sort_keys=True)
+        (CACHE_PATH / "stations").write_text(
+            json.dumps(cached["stations"], indent=4, sort_keys=True)
+        )
     headers = ["id", "name", "canonical"]
     data = sorted(STATIONS_PATTERN.search(cached["stations"]))
     table = terminaltables.AsciiTable(

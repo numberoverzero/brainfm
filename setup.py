@@ -48,9 +48,9 @@ if __name__ == "__main__":
             ]
         },
         install_requires=[
-            "click==6.6",
-            "jmespath==0.9.0",
-            "requests==2.11.1",
-            "terminaltables==3.1.0"
+            "click>=6",
+            "jmespath>=0.9",
+            "requests>=2.11",
+            "terminaltables>=3.1"
         ],
     )
