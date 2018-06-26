@@ -42,16 +42,16 @@ Now, open the stream using that token::
 Expects an environment variable named `BRAINFM_SID` to exist.
 You can use `brain init` to generate one:
 
-```
-$ brain init
-Email: user@gdomain.com
-Password: <hidden>
-Repeat for confirmation: <hidden>
+::
 
-Add the following to your .profile, .bashrc, or equivalent:
+    $ brain init
+    Email: user@gdomain.com
+    Password: <hidden>
+    Repeat for confirmation: <hidden>
 
-    export BRAINFM_SID="s%3...s0xo"
-```
+    Add the following to your .profile, .bashrc, or equivalent:
+
+        export BRAINFM_SID="s%3...s0xo"
 
 Usage::
 
