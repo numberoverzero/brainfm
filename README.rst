@@ -2,7 +2,7 @@ Unofficial Brain.fm Python Client (3.5+)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The ``Connection`` class exposes three operations: ``login``, ``get_stations``, and ``get_token``.
-Please open an issue if there's a specific operation you need.
+Please open an issue if there's another operation you need.
 
 This client requires Python 3.5+.
 

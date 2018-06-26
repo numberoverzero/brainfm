@@ -10,7 +10,6 @@ __all__ = [
     "build_stream_url",
 ]
 
-# http://www.useragentstring.com/index.php?id=19841
 BROWSER = (
     "Mozilla/5.0 (Windows NT 6.1; Win64; x64) "
     "AppleWebKit/537.36 (KHTML, like Gecko) "
@@ -63,8 +62,10 @@ class Connection:
     def login(self, email, password):
         del self.sid
         payload = {"email": email, "password": password, "type": "LOGIN"}
+        # populates session.cookies["connect.sid"]
         r = self.session.post(endpoint("/login"), json=payload)
         r.raise_for_status()
+        return r.json()
 
     def get_stations(self):
         r = self.session.get(endpoint("/stations"))

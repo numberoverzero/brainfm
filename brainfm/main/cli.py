@@ -12,27 +12,21 @@ import terminaltables
 
 import brainfm
 
+from .lazy import deferred
+
 
 CONFIG_PATH = pathlib.Path("~/.brainfm/config").expanduser()
-CACHE_PATH = pathlib.Path("~/.brainfm/cache").expanduser()
-CACHE_PATH.mkdir(parents=True, exist_ok=True)
 STATIONS_PATTERN = jmespath.compile("[*].[id, name, string_id]")
 
 
+# deferred so that brain --help doesn't
+# build a client just to dump usage info
+@deferred
 def build_client():
-
-    # TODO expire cached values
-    try:
-        sid = (CACHE_PATH / "sid").read_text().strip()
-    except Exception:
-        sid = None
-        with CONFIG_PATH.open() as config_file:
-            config = json.loads(config_file.read().strip())
-
-    client = brainfm.Connection(sid=sid)
-    if sid is None:
-        client.login(config["email"], config["password"])
-        (CACHE_PATH / "sid").write_text(client.sid.strip())
+    with CONFIG_PATH.open() as config_file:
+        config = json.loads(config_file.read().strip())
+    client = brainfm.Connection()
+    client.login(config["email"], config["password"])
     return client
 
 
@@ -47,13 +41,13 @@ def cli():
 
 @cli.command()
 def sid():
-    """Display the current siteVisitorUUID"""
+    """Create a session id"""
     print(client.sid)
 
 
 @cli.command()
 def ls():
-    """List available stations"""
+    """List stations"""
     stations = client.get_stations()
     headers = ["id", "name", "string_id"]
     data = sorted(STATIONS_PATTERN.search(stations))
@@ -66,7 +60,7 @@ def ls():
 @cli.command()
 @click.argument("station_id")
 def gt(station_id):
-    """Get a station token"""
+    """Create a station token"""
     token = client.get_token(station_id)
     print(token)
 
@@ -74,7 +68,7 @@ def gt(station_id):
 @cli.command()
 @click.argument("station_id")
 def url(station_id):
-    """Get a station URL"""
+    """Create a station url"""
     token = client.get_token(station_id)
     print(brainfm.build_stream_url(token))
 
@@ -83,7 +77,7 @@ def url(station_id):
 @click.argument("station_id")
 @click.option("--player", help="Command used to play the stream.  Defaults to browser.")
 def play(station_id, player=None):
-    """Play a station stream"""
+    """Play a station"""
     token = client.get_token(station_id)
     stream_url = brainfm.build_stream_url(token)
     if player:
