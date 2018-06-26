@@ -9,6 +9,7 @@ import terminaltables
 
 import brainfm
 
+
 STATIONS_PATTERN = jmespath.compile("[*].[id, name, string_id]")
 
 
