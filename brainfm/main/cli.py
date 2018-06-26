@@ -1,7 +1,4 @@
 #!/usr/bin/env python
-
-import json
-import pathlib
 import shlex
 import subprocess
 import webbrowser
@@ -12,43 +9,58 @@ import terminaltables
 
 import brainfm
 
-from .lazy import deferred
-
-
-CONFIG_PATH = pathlib.Path("~/.brainfm/config").expanduser()
 STATIONS_PATTERN = jmespath.compile("[*].[id, name, string_id]")
 
 
-# deferred so that brain --help doesn't
-# build a client just to dump usage info
-@deferred
-def build_client():
-    with CONFIG_PATH.open() as config_file:
-        config = json.loads(config_file.read().strip())
-    client = brainfm.Connection()
-    client.login(config["email"], config["password"])
-    return client
-
-
-client = build_client()
+def validate_client(client):
+    if not client.sid:
+        raise click.UsageError(
+            "missing environment variable {}\n".format(brainfm.SID_ENVIRON_KEY) +
+            "Did you run `brain init` and export the variable?"
+        )
 
 
 @click.group()
 @click.version_option()
-def cli():
-    pass
+@click.pass_context
+def cli(ctx):
+    ctx.obj = brainfm.Connection()
 
 
 @cli.command()
-def sid():
-    """Create a session id"""
+@click.option("--email", prompt=True)
+@click.option("--password", prompt=True, confirmation_prompt=True, hide_input=True)
+@click.option("--simple", is_flag=True, default=False)
+@click.pass_obj
+def init(client, email, password, simple):
+    """Create a session id
+
+    By default prints out usage instructions.  For programmatic
+    use, pass --simple to only print the bare sid.
+    """
+    client.login(email, password)
+    sid = client.sid
+    if simple:
+        print(sid)
+    else:
+        print("\nAdd the following to your .profile, .bashrc, or equivalent:\n")
+        print("    export {}=\"{}\"\n".format(brainfm.SID_ENVIRON_KEY, sid))
+
+
+@cli.command()
+@click.pass_obj
+def sid(client):
+    """Print out the session id"""
+    validate_client(client)
     print(client.sid)
 
 
 @cli.command()
-def ls():
+@click.pass_obj
+def ls(client):
     """List stations"""
-    stations = client.get_stations()
+    validate_client(client)
+    stations = client.list_stations()
     headers = ["id", "name", "string_id"]
     data = sorted(STATIONS_PATTERN.search(stations))
     table = terminaltables.AsciiTable(
@@ -59,16 +71,20 @@ def ls():
 
 @cli.command()
 @click.argument("station_id")
-def gt(station_id):
+@click.pass_obj
+def gt(client, station_id):
     """Create a station token"""
+    validate_client(client)
     token = client.get_token(station_id)
     print(token)
 
 
 @cli.command()
 @click.argument("station_id")
-def url(station_id):
+@click.pass_obj
+def url(client, station_id):
     """Create a station url"""
+    validate_client(client)
     token = client.get_token(station_id)
     print(brainfm.build_stream_url(token))
 
@@ -76,8 +92,10 @@ def url(station_id):
 @cli.command()
 @click.argument("station_id")
 @click.option("--player", help="Command used to play the stream.  Defaults to browser.")
-def play(station_id, player=None):
+@click.pass_obj
+def play(client, station_id, player=None):
     """Play a station"""
+    validate_client(client)
     token = client.get_token(station_id)
     stream_url = brainfm.build_stream_url(token)
     if player:

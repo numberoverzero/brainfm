@@ -1,7 +1,7 @@
 Unofficial Brain.fm Python Client (3.5+)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The ``Connection`` class exposes three operations: ``login``, ``get_stations``, and ``get_token``.
+The ``Connection`` class exposes three operations: ``login``, ``list_stations``, and ``get_token``.
 Please open an issue if there's another operation you need.
 
 This client requires Python 3.5+.
@@ -19,7 +19,7 @@ This client requires Python 3.5+.
     >>> import brainfm
     >>> client = brainfm.Connection()
     >>> client.login("your@email.here", "hunter2")
-    >>> client.get_stations()
+    >>> client.list_stations()
     [{'name': 'Cinematic Music Focus', 'id': 300,
       'string_id': 'explore.focus.cinematic'},
      {'name': 'Beach Focus', 'id': 53,
@@ -39,12 +39,19 @@ Now, open the stream using that token::
  CLI
 =====
 
-Needs a credentials file in ~/.brainfm/config with the format::
+Expects an environment variable named `BRAINFM_SID` to exist.
+You can use `brain init` to generate one:
 
-    {
-        "email": "your@email.here",
-        "password": "hunter2"
-    }
+```
+$ brain init
+Email: user@gdomain.com
+Password: <hidden>
+Repeat for confirmation: <hidden>
+
+Add the following to your .profile, .bashrc, or equivalent:
+
+    export BRAINFM_SID="s%3...s0xo"
+```
 
 Usage::
 

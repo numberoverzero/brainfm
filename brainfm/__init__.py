@@ -1,3 +1,4 @@
+import os
 import requests
 
 
@@ -10,6 +11,7 @@ __all__ = [
     "build_stream_url",
 ]
 
+SID_ENVIRON_KEY = "BRAINFM_SID"
 BROWSER = (
     "Mozilla/5.0 (Windows NT 6.1; Win64; x64) "
     "AppleWebKit/537.36 (KHTML, like Gecko) "
@@ -37,6 +39,9 @@ class Connection:
     def __init__(self, sid=None, user_agent=DEFAULT_USER_AGENT):
         self.session = requests.Session()
         self.user_agent = user_agent
+        # try to load sid from env vars
+        if sid is None:
+            sid = os.environ.get(SID_ENVIRON_KEY, None)
         self.sid = sid
 
     @property
@@ -49,7 +54,7 @@ class Connection:
 
     @property
     def sid(self):
-        return self.session.cookies["connect.sid"]
+        return self.session.cookies.get("connect.sid", None)
 
     @sid.setter
     def sid(self, value):
@@ -67,7 +72,7 @@ class Connection:
         r.raise_for_status()
         return r.json()
 
-    def get_stations(self):
+    def list_stations(self):
         r = self.session.get(endpoint("/stations"))
         r.raise_for_status()
         return r.json()["stations"]
