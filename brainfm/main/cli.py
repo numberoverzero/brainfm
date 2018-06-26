@@ -1,49 +1,42 @@
 #!/usr/bin/env python
 
-import brainfm
-import click
-import jmespath
 import json
 import pathlib
 import shlex
 import subprocess
-import sys
-import terminaltables
 import webbrowser
+
+import click
+import jmespath
+import terminaltables
+
+import brainfm
+
 
 CONFIG_PATH = pathlib.Path("~/.brainfm/config").expanduser()
 CACHE_PATH = pathlib.Path("~/.brainfm/cache").expanduser()
 CACHE_PATH.mkdir(parents=True, exist_ok=True)
-STATIONS_PATTERN = jmespath.compile("[*].[station_id, name, canonical_name]")
+STATIONS_PATTERN = jmespath.compile("[*].[id, name, string_id]")
 
-# TODO graceful failure when config is missing/invalid
-with CONFIG_PATH.open() as config_file:
-    config = json.load(config_file)
 
-client = brainfm.Connection(config["email"], config["password"])
+def build_client():
 
-# TODO expire cached values
-if (CACHE_PATH / "svu").exists():
-    client._svu = (CACHE_PATH / "svu").read_text().strip() or None
-# if cache didn't exist or was an empty file, Connection will re-fetch it.
-(CACHE_PATH / "svu").write_text(client.svu.strip())
-
-cached = {
-    "stations": None
-}
-
-if (CACHE_PATH / "stations").exists():
+    # TODO expire cached values
     try:
-        cached["stations"] = json.loads((CACHE_PATH / "stations").read_text())
-    except json.JSONDecodeError:
-        # Drop malformed file
-        (CACHE_PATH / "stations").unlink()
+        sid = (CACHE_PATH / "sid").read_text().strip()
+    except Exception:
+        sid = None
+        with CONFIG_PATH.open() as config_file:
+            config = json.loads(config_file.read().strip())
+
+    client = brainfm.Connection(sid=sid)
+    if sid is None:
+        client.login(config["email"], config["password"])
+        (CACHE_PATH / "sid").write_text(client.sid.strip())
+    return client
 
 
-def render(d, is_error=False):
-    print(json.dumps(d, indent=4, sort_keys=True))
-    if is_error:
-        sys.exit(1)
+client = build_client()
 
 
 @click.group()
@@ -53,21 +46,17 @@ def cli():
 
 
 @cli.command()
-def svu():
+def sid():
     """Display the current siteVisitorUUID"""
-    print(client.svu)
+    print(client.sid)
 
 
 @cli.command()
 def ls():
     """List available stations"""
-    if not cached["stations"]:
-        cached["stations"] = client.get_stations()
-        (CACHE_PATH / "stations").write_text(
-            json.dumps(cached["stations"], indent=4, sort_keys=True)
-        )
-    headers = ["id", "name", "canonical"]
-    data = sorted(STATIONS_PATTERN.search(cached["stations"]))
+    stations = client.get_stations()
+    headers = ["id", "name", "string_id"]
+    data = sorted(STATIONS_PATTERN.search(stations))
     table = terminaltables.AsciiTable(
         table_data=[headers] + data,
         title="Available Stations")
@@ -76,28 +65,18 @@ def ls():
 
 @cli.command()
 @click.argument("station_id")
-def gs(station_id):
-    """Get a single station"""
-    station = client.get_station(station_id=station_id)
-    render(station)
-
-
-@cli.command()
-@click.argument("station_id")
 def gt(station_id):
     """Get a station token"""
-    token = client.get_token(station_id=station_id)
-    render(token)
+    token = client.get_token(station_id)
+    print(token)
 
 
 @cli.command()
 @click.argument("station_id")
 def url(station_id):
     """Get a station URL"""
-    token = client.get_token(station_id=station_id)
-    if isinstance(token, brainfm.Error):
-        render(token, is_error=True)
-    print("https://stream.brain.fm/?tkn=" + token["session_token"])
+    token = client.get_token(station_id)
+    print(brainfm.build_stream_url(token))
 
 
 @cli.command()
@@ -105,13 +84,12 @@ def url(station_id):
 @click.option("--player", help="Command used to play the stream.  Defaults to browser.")
 def play(station_id, player=None):
     """Play a station stream"""
-    token = client.get_token(station_id=station_id)
-    if isinstance(token, brainfm.Error):
-        render(token, is_error=True)
-    stream_url = "https://stream.brain.fm/?tkn=" + token["session_token"]
+    token = client.get_token(station_id)
+    stream_url = brainfm.build_stream_url(token)
     if player:
         subprocess.run(shlex.split(player) + [stream_url])
     else:
         webbrowser.open_new_tab(stream_url)
+
 
 main = cli
