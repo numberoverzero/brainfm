@@ -1,73 +1,69 @@
 #!/usr/bin/env python
-
-import brainfm
-import click
-import jmespath
-import json
-import pathlib
 import shlex
 import subprocess
-import sys
-import terminaltables
 import webbrowser
 
-CONFIG_PATH = pathlib.Path("~/.brainfm/config").expanduser()
-CACHE_PATH = pathlib.Path("~/.brainfm/cache").expanduser()
-CACHE_PATH.mkdir(parents=True, exist_ok=True)
-STATIONS_PATTERN = jmespath.compile("[*].[station_id, name, canonical_name]")
+import click
+import jmespath
+import terminaltables
 
-# TODO graceful failure when config is missing/invalid
-with CONFIG_PATH.open() as config_file:
-    config = json.load(config_file)
-
-client = brainfm.Connection(config["email"], config["password"])
-
-# TODO expire cached values
-if (CACHE_PATH / "svu").exists():
-    client._svu = (CACHE_PATH / "svu").read_text().strip() or None
-# if cache didn't exist or was an empty file, Connection will re-fetch it.
-(CACHE_PATH / "svu").write_text(client.svu.strip())
-
-cached = {
-    "stations": None
-}
-
-if (CACHE_PATH / "stations").exists():
-    try:
-        cached["stations"] = json.loads((CACHE_PATH / "stations").read_text())
-    except json.JSONDecodeError:
-        # Drop malformed file
-        (CACHE_PATH / "stations").unlink()
+import brainfm
 
 
-def render(d, is_error=False):
-    print(json.dumps(d, indent=4, sort_keys=True))
-    if is_error:
-        sys.exit(1)
+STATIONS_PATTERN = jmespath.compile("[*].[id, name, string_id]")
+
+
+def validate_client(client):
+    if not client.sid:
+        raise click.UsageError(
+            "missing environment variable {}\n".format(brainfm.SID_ENVIRON_KEY) +
+            "Did you run `brain init` and export the variable?"
+        )
 
 
 @click.group()
 @click.version_option()
-def cli():
-    pass
+@click.pass_context
+def cli(ctx):
+    ctx.obj = brainfm.Connection()
 
 
 @cli.command()
-def svu():
-    """Display the current siteVisitorUUID"""
-    print(client.svu)
+@click.option("--email", prompt=True)
+@click.option("--password", prompt=True, confirmation_prompt=True, hide_input=True)
+@click.option("--simple", is_flag=True, default=False)
+@click.pass_obj
+def init(client, email, password, simple):
+    """Create a session id
+
+    By default prints out usage instructions.  For programmatic
+    use, pass --simple to only print the bare sid.
+    """
+    client.login(email, password)
+    sid = client.sid
+    if simple:
+        print(sid)
+    else:
+        print("\nAdd the following to your .profile, .bashrc, or equivalent:\n")
+        print("    export {}=\"{}\"\n".format(brainfm.SID_ENVIRON_KEY, sid))
 
 
 @cli.command()
-def ls():
-    """List available stations"""
-    if not cached["stations"]:
-        cached["stations"] = client.get_stations()
-        (CACHE_PATH / "stations").write_text(
-            json.dumps(cached["stations"], indent=4, sort_keys=True)
-        )
-    headers = ["id", "name", "canonical"]
-    data = sorted(STATIONS_PATTERN.search(cached["stations"]))
+@click.pass_obj
+def sid(client):
+    """Print out the session id"""
+    validate_client(client)
+    print(client.sid)
+
+
+@cli.command()
+@click.pass_obj
+def ls(client):
+    """List stations"""
+    validate_client(client)
+    stations = client.list_stations()
+    headers = ["id", "name", "string_id"]
+    data = sorted(STATIONS_PATTERN.search(stations))
     table = terminaltables.AsciiTable(
         table_data=[headers] + data,
         title="Available Stations")
@@ -76,42 +72,37 @@ def ls():
 
 @cli.command()
 @click.argument("station_id")
-def gs(station_id):
-    """Get a single station"""
-    station = client.get_station(station_id=station_id)
-    render(station)
+@click.pass_obj
+def gt(client, station_id):
+    """Create a station token"""
+    validate_client(client)
+    token = client.get_token(station_id)
+    print(token)
 
 
 @cli.command()
 @click.argument("station_id")
-def gt(station_id):
-    """Get a station token"""
-    token = client.get_token(station_id=station_id)
-    render(token)
-
-
-@cli.command()
-@click.argument("station_id")
-def url(station_id):
-    """Get a station URL"""
-    token = client.get_token(station_id=station_id)
-    if isinstance(token, brainfm.Error):
-        render(token, is_error=True)
-    print("https://stream.brain.fm/?tkn=" + token["session_token"])
+@click.pass_obj
+def url(client, station_id):
+    """Create a station url"""
+    validate_client(client)
+    token = client.get_token(station_id)
+    print(brainfm.build_stream_url(token))
 
 
 @cli.command()
 @click.argument("station_id")
 @click.option("--player", help="Command used to play the stream.  Defaults to browser.")
-def play(station_id, player=None):
-    """Play a station stream"""
-    token = client.get_token(station_id=station_id)
-    if isinstance(token, brainfm.Error):
-        render(token, is_error=True)
-    stream_url = "https://stream.brain.fm/?tkn=" + token["session_token"]
+@click.pass_obj
+def play(client, station_id, player=None):
+    """Play a station"""
+    validate_client(client)
+    token = client.get_token(station_id)
+    stream_url = brainfm.build_stream_url(token)
     if player:
         subprocess.run(shlex.split(player) + [stream_url])
     else:
         webbrowser.open_new_tab(stream_url)
+
 
 main = cli
