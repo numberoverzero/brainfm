@@ -6,9 +6,27 @@ Please open an issue if there's another operation you need.
 
 This client requires Python 3.5+.
 
-============
- Quickstart
-============
+================
+ CLI Quickstart
+================
+
+::
+
+    $ pip install brainfm
+    $ brain init
+    Email: user@gdomain.com
+    Password: <hidden>
+    Repeat for confirmation: <hidden>
+
+    Add the following to your .profile, .bashrc, or equivalent:
+
+        export BRAINFM_SID="s%3...s0xo"
+    $ # <commands to modify and reload profile>
+    $ brain play 300
+
+====================
+ Library Quickstart
+====================
 
 ::
 
