@@ -31,7 +31,7 @@ def endpoint(path):
 
 
 class Connection:
-    """Low-level operation mapping and parameter validation.
+    """Use an SID from ``brainfm.SID_ENVIRON_KEY`` or Connection.login(email, pw)
 
     If brain.fm starts filtering on user-agent,
     set :attr:`Connection.user_agent` to :data:`brainfm.BROWSER`.
