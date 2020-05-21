@@ -13,7 +13,7 @@ import brainfm
 STATIONS_PATTERN = jmespath.compile("[*].[id, name, string_id]")
 
 
-def validate_client(client):
+def validate_client(client: brainfm.Connection):
     if not client.sid:
         raise click.UsageError(
             "missing environment variable {}\n".format(brainfm.SID_ENVIRON_KEY) +
@@ -33,12 +33,8 @@ def cli(ctx):
 @click.option("--password", prompt=True, confirmation_prompt=True, hide_input=True)
 @click.option("--simple", is_flag=True, default=False)
 @click.pass_obj
-def init(client, email, password, simple):
-    """Create a session id
-
-    By default prints out usage instructions.  For programmatic
-    use, pass --simple to only print the bare sid.
-    """
+def init(client: brainfm.Connection, email, password, simple):
+    """Create a session id.  Use --simple to omit instructions"""
     client.login(email, password)
     sid = client.sid
     if simple:
@@ -50,7 +46,7 @@ def init(client, email, password, simple):
 
 @cli.command()
 @click.pass_obj
-def sid(client):
+def sid(client: brainfm.Connection):
     """Print out the session id"""
     validate_client(client)
     print(client.sid)
@@ -58,7 +54,7 @@ def sid(client):
 
 @cli.command()
 @click.pass_obj
-def ls(client):
+def ls(client: brainfm.Connection):
     """List stations"""
     validate_client(client)
     stations = client.list_stations()
@@ -73,7 +69,7 @@ def ls(client):
 @cli.command()
 @click.argument("station_id")
 @click.pass_obj
-def gt(client, station_id):
+def gt(client: brainfm.Connection, station_id):
     """Create a station token"""
     validate_client(client)
     token = client.get_token(station_id)
@@ -83,22 +79,22 @@ def gt(client, station_id):
 @cli.command()
 @click.argument("station_id")
 @click.pass_obj
-def url(client, station_id):
+def url(client: brainfm.Connection, station_id):
     """Create a station url"""
     validate_client(client)
     token = client.get_token(station_id)
-    print(brainfm.build_stream_url(token))
+    print(client.make_stream_url(token))
 
 
 @cli.command()
 @click.argument("station_id")
 @click.option("--player", help="Command used to play the stream.  Defaults to browser.")
 @click.pass_obj
-def play(client, station_id, player=None):
+def play(client: brainfm.Connection, station_id, player=None):
     """Play a station"""
     validate_client(client)
     token = client.get_token(station_id)
-    stream_url = brainfm.build_stream_url(token)
+    stream_url = client.make_stream_url(token)
     if player:
         subprocess.run(shlex.split(player) + [stream_url])
     else:
