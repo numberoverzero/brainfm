@@ -46,7 +46,7 @@ This client requires Python 3.5+.
     >>> token = client.get_token(53)
     >>> token
     '63f4b59b-93f4-45e6-b0c2-eb6b1582fb96'
-    >>> brainfm.build_stream_url(token)
+    >>> client.make_stream_url(token)
     'https://stream.brain.fm/?tkn=63f4b59b-93f4-45e6-b0c2-eb6b1582fb96'
 
 Now, open the stream using that token::
