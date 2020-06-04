@@ -1,8 +1,9 @@
 Unofficial Brain.fm Python Client (3.5+)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The ``Connection`` class exposes three operations: ``login``, ``list_stations``, and ``get_token``.
-Please open an issue if there's another operation you need.
+The ``Connection`` class exposes four operations: ``login``,
+``list_stations``, ``get_token`` and ``make_stream_url``.  Please open an
+issue if there's another operation you need.
 
 This client requires Python 3.5+.
 
@@ -21,7 +22,9 @@ This client requires Python 3.5+.
     Add the following to your .profile, .bashrc, or equivalent:
 
         export BRAINFM_SID="s%3...s0xo"
-    $ # <commands to modify and reload profile>
+        export BRAINFM_STREAM_ENDPOINT="https://..."
+
+    $ # ... commands to modify and reload profile ...
     $ brain play 300
 
 ====================
@@ -57,8 +60,8 @@ Now, open the stream using that token::
  CLI
 =====
 
-Expects an environment variable named `BRAINFM_SID` to exist.
-You can use `brain init` to generate one:
+You must pass an sid with ``--sid`` or define an environment variable
+``BRAINFM_SID``.  You can use ``brain init`` to generate one:
 
 ::
 
@@ -70,6 +73,11 @@ You can use `brain init` to generate one:
     Add the following to your .profile, .bashrc, or equivalent:
 
         export BRAINFM_SID="s%3...s0xo"
+        export BRAINFM_STREAM_ENDPOINT="https://..."
+
+While setting ``BRAINFM_STREAM_ENDPOINT`` is not strictly necessary, the
+cli is faster when either the env var is defined or you provide the endpoint
+explicitly: ``brain --stream-endpoint=... ls``
 
 Usage::
 
@@ -92,6 +100,18 @@ Usage::
     $ brain play 60
     # opens a browser at:
     #   https://stream.brain.fm/?tkn=3ff0eab0-a5f6-11e6-a5c2-f11c700a6178
+
+--------------------
+ Override Endpoints
+--------------------
+
+From the cli you can override the api and stream endpoints with
+``--api-endpoint`` and ``--stream-endpoint`` respectively.  This is useful
+when the service switches endpoints but this library hasn't been updated to
+match.
+
+You can also provide these as env variables
+``BRAINFM_API_ENDPOINT`` and ``BRAINFM_STREAM_ENDPOINT``
 
 ============
  User-Agent

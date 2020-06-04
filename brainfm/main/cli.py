@@ -9,23 +9,31 @@ import terminaltables
 
 import brainfm
 
-
+ENVKEY_SID = "BRAINFM_SID"
+ENVKEY_API_ENDPOINT = "BRAINFM_API_ENDPOINT"
+ENVKEY_STREAM_ENDPOINT = "BRAINFM_STREAM_ENDPOINT"
 STATIONS_PATTERN = jmespath.compile("[*].[id, name, string_id]")
 
 
 def validate_client(client: brainfm.Connection):
     if not client.sid:
         raise click.UsageError(
-            "missing environment variable {}\n".format(brainfm.SID_ENVIRON_KEY) +
+            "missing option --sid or environment variable {}\n".format(ENVKEY_SID) +
             "Did you run `brain init` and export the variable?"
         )
 
 
 @click.group()
 @click.version_option()
+@click.option("--sid", envvar=ENVKEY_SID)
+@click.option("--api-endpoint", envvar=ENVKEY_API_ENDPOINT)
+@click.option("--stream-endpoint", envvar=ENVKEY_STREAM_ENDPOINT)
 @click.pass_context
-def cli(ctx):
-    ctx.obj = brainfm.Connection()
+def cli(ctx, sid, api_endpoint, stream_endpoint):
+    ctx.obj = brainfm.Connection(
+        sid=sid,
+        api_endpoint=api_endpoint,
+        stream_endpoint=stream_endpoint)
 
 
 @cli.command()
@@ -36,20 +44,24 @@ def cli(ctx):
 def init(client: brainfm.Connection, email, password, simple):
     """Create a session id.  Use --simple to omit instructions"""
     client.login(email, password)
-    sid = client.sid
     if simple:
-        print(sid)
+        print(client.sid)
     else:
+        args = ENVKEY_SID, client.sid, ENVKEY_STREAM_ENDPOINT, client.stream_endpoint
         print("\nAdd the following to your .profile, .bashrc, or equivalent:\n")
-        print("    export {}=\"{}\"\n".format(brainfm.SID_ENVIRON_KEY, sid))
+        print("    export {}=\"{}\"\n    export {}=\"{}\"\n".format(*args))
 
 
 @cli.command()
 @click.pass_obj
-def sid(client: brainfm.Connection):
-    """Print out the session id"""
+def details(client: brainfm.Connection):
+    """Describe the connection params"""
     validate_client(client)
-    print(client.sid)
+    print("sid {}\napi {}\nstream {}\n".format(
+        client.sid,
+        client.api_endpoint,
+        client.stream_endpoint
+    ))
 
 
 @cli.command()
