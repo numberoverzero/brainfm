@@ -12,7 +12,7 @@ import brainfm
 ENVKEY_SID = "BRAINFM_SID"
 ENVKEY_API_ENDPOINT = "BRAINFM_API_ENDPOINT"
 ENVKEY_STREAM_ENDPOINT = "BRAINFM_STREAM_ENDPOINT"
-STATIONS_PATTERN = jmespath.compile("[*].[id, name, string_id]")
+STATIONS_PATTERN = jmespath.compile("[*].[id, name, string_id, length]")
 
 
 def validate_client(client: brainfm.Connection):
@@ -70,8 +70,9 @@ def ls(client: brainfm.Connection):
     """List stations"""
     validate_client(client)
     stations = client.list_stations()
-    headers = ["id", "name", "string_id"]
+    headers = ["id", "name", "string_id", "length"]
     data = sorted(STATIONS_PATTERN.search(stations))
+    data = [station for station in data if station[3]]
     table = terminaltables.AsciiTable(
         table_data=[headers] + data,
         title="Available Stations")

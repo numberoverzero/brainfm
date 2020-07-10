@@ -82,17 +82,17 @@ explicitly: ``brain --stream-endpoint=... ls``
 Usage::
 
     $ brain ls
-    +Available Stations------------+---------------------------+
-    | id  | name                   | string_id                 |
-    +-----+------------------------+---------------------------+
-    | 34  | Relaxed Focus          | explore.relaxed           |
-    | 53  | Beach Focus            | explore.focus.beach       |
-    | 54  | Chimes & Bowls Focus   | explore.focus.bells       |
-    | 55  | Electronic Music Focus | explore.focus.electronic  |
-    | ... | ...                    | ...                       |
-    | 262 | Wind Relax             | explore.relax.wind        |
-    | 300 | Cinematic Music Focus  | explore.focus.cinematic   |
-    +-----+------------------------+---------------------------+
+    +Available Stations------------+-----------------------+--------+
+    | id  | name                   | string_id             | length |
+    +-----+------------------------+-----------------------+--------+
+    | 32  | Quick Relax            | relax.justrelax15min  | 15     |
+    | 34  | Relaxed Focus          | explore.relaxed       | 30     |
+    | 35  | Focus                  | focus.3               | 30     |
+    | 36  | Sleep                  | sleep                 | 45     |
+    | ... | ...                    | ...                   | ...    |
+    | 540 | Study Focus            | explore.focus.study   | 30     |
+    | 541 | LoFi Focus             | explore.focus.lowfi   | 30     |
+    +-----+------------------------+-----------------------+--------+
 
     $ brain gt 60
     3ff0eab0-a5f6-11e6-a5c2-f11c700a6178
