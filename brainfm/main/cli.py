@@ -66,13 +66,15 @@ def details(client: brainfm.Connection):
 
 @cli.command()
 @click.pass_obj
-def ls(client: brainfm.Connection):
+@click.option("-a", is_flag=True, default=False)
+def ls(client: brainfm.Connection, a):
     """List stations"""
     validate_client(client)
     stations = client.list_stations()
     headers = ["id", "name", "string_id", "length"]
     data = sorted(STATIONS_PATTERN.search(stations))
-    data = [station for station in data if station[3]]
+    if not a:
+        data = [station for station in data if station[3]]
     table = terminaltables.AsciiTable(
         table_data=[headers] + data,
         title="Available Stations")
