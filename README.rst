@@ -82,31 +82,31 @@ explicitly: ``brain --stream-endpoint=... ls``
 Usage::
 
     $ brain ls
-    +Playable Stations-------------+-----------------------+--------+
-    | id  | name                   | string_id             | length |
-    +-----+------------------------+-----------------------+--------+
-    | 32  | Quick Relax            | relax.justrelax15min  | 15     |
-    | 34  | Relaxed Focus          | explore.relaxed       | 30     |
-    | 35  | Focus                  | focus.3               | 30     |
-    | 36  | Sleep                  | sleep                 | 45     |
-    | ... | ...                    | ...                   | ...    |
-    | 540 | Study Focus            | explore.focus.study   | 30     |
-    | 541 | LoFi Focus             | explore.focus.lowfi   | 30     |
-    +-----+------------------------+-----------------------+--------+
+    +Playable Stations-------------+-----------------------+-------- +
+    | id  | name                   | string_id             | length  |
+    +-----+------------------------+-----------------------+-------- +
+    | 32  | Quick Relax            | relax.justrelax15min  | 15 mins |
+    | 34  | Relaxed Focus          | explore.relaxed       | 30 mins |
+    | 35  | Focus                  | focus.3               | 30 mins |
+    | 36  | Sleep                  | sleep                 | 45 mins |
+    | ... | ...                    | ...                   | ...     |
+    | 540 | Study Focus            | explore.focus.study   | 30 mins |
+    | 541 | LoFi Focus             | explore.focus.lowfi   | 30 mins |
+    +-----+------------------------+-----------------------+-------- +
 
     $ brain ls -a
-    +All Stations------------------+-----------------------+--------+
-    | id  | name                   | string_id             | length |
-    +-----+------------------------+-----------------------+--------+
-    | 0   | Favorites              | None                  | None   |
-    | 32  | Quick Relax            | relax.justrelax15min  | 15     |
-    | 34  | Relaxed Focus          | explore.relaxed       | 30     |
-    | ... | ...                    | ...                   | ...    |
-    | 46  | Explore                | explore               | None   |
-    | 47  | Explore Relax          | explore.relax         | None   |
-    | ... | ...                    | ...                   | ...    |
-    | 541 | LoFi Focus             | explore.focus.lowfi   | 30     |
-    +-----+------------------------+-----------------------+--------+
+    +All Stations------------------+-----------------------+-------- +
+    | id  | name                   | string_id             | length  |
+    +-----+------------------------+-----------------------+-------- +
+    | 0   | Favorites              | None                  | None    |
+    | 32  | Quick Relax            | relax.justrelax15min  | 15 mins |
+    | 34  | Relaxed Focus          | explore.relaxed       | 30 mins |
+    | ... | ...                    | ...                   | ...     |
+    | 46  | Explore                | explore               | None    |
+    | 47  | Explore Relax          | explore.relax         | None    |
+    | ... | ...                    | ...                   | ...     |
+    | 541 | LoFi Focus             | explore.focus.lowfi   | 30 mins |
+    +-----+------------------------+-----------------------+-------- +
 
     $ brain gt 60
     3ff0eab0-a5f6-11e6-a5c2-f11c700a6178

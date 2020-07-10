@@ -76,12 +76,19 @@ def ls(client: brainfm.Connection, a):
     ls_title = "Available Stations"
     if a:
         ls_title = "All Stations"
-        for i, station in enumerate(data[:]):
-            if not station[3]:
-                data[i][3] = "None"
     else:
         ls_title = "Playable Stations"
         data = [station for station in data if station[3]]
+    for i, station in enumerate(data[:]):
+        duration = int(station[3])
+        if duration == 0:
+            data[i][3] = "None"
+        elif duration == 60:
+            data[i][3] = "1 hr"
+        elif duration > 60:
+            data[i][3] = str(int(duration / 60)) + " hrs"
+        else:
+            data[i][3] = str(duration) + " mins"
     table = terminaltables.AsciiTable(
         table_data=[headers] + data,
         title=ls_title)
