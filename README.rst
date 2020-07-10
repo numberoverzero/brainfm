@@ -81,8 +81,8 @@ explicitly: ``brain --stream-endpoint=... ls``
 
 Usage::
 
-    $ brain ls (shows playable stations)
-    +Available Stations------------+-----------------------+--------+
+    $ brain ls
+    +Playable Stations-------------+-----------------------+--------+
     | id  | name                   | string_id             | length |
     +-----+------------------------+-----------------------+--------+
     | 32  | Quick Relax            | relax.justrelax15min  | 15     |
@@ -94,16 +94,16 @@ Usage::
     | 541 | LoFi Focus             | explore.focus.lowfi   | 30     |
     +-----+------------------------+-----------------------+--------+
 
-    $ brain ls -a (shows all stations)
-    +Available Stations------------+-----------------------+--------+
+    $ brain ls -a
+    +All Stations------------------+-----------------------+--------+
     | id  | name                   | string_id             | length |
     +-----+------------------------+-----------------------+--------+
-    | 0   | Favorites              | None                  | 0      |
+    | 0   | Favorites              | None                  | None   |
     | 32  | Quick Relax            | relax.justrelax15min  | 15     |
     | 34  | Relaxed Focus          | explore.relaxed       | 30     |
     | ... | ...                    | ...                   | ...    |
-    | 46  | Explore                | explore               | 0      |
-    | 47  | Explore Relax          | explore.relax         | 0      |
+    | 46  | Explore                | explore               | None   |
+    | 47  | Explore Relax          | explore.relax         | None   |
     | ... | ...                    | ...                   | ...    |
     | 541 | LoFi Focus             | explore.focus.lowfi   | 30     |
     +-----+------------------------+-----------------------+--------+

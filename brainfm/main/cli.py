@@ -73,11 +73,18 @@ def ls(client: brainfm.Connection, a):
     stations = client.list_stations()
     headers = ["id", "name", "string_id", "length"]
     data = sorted(STATIONS_PATTERN.search(stations))
-    if not a:
+    ls_title = "Available Stations"
+    if a:
+        ls_title = "All Stations"
+        for i, station in enumerate(data[:]):
+            if not station[3]:
+                data[i][3] = "None"
+    else:
+        ls_title = "Playable Stations"
         data = [station for station in data if station[3]]
     table = terminaltables.AsciiTable(
         table_data=[headers] + data,
-        title="Available Stations")
+        title=ls_title)
     print(table.table)
 
 
