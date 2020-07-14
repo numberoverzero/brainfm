@@ -12,7 +12,7 @@ import brainfm
 ENVKEY_SID = "BRAINFM_SID"
 ENVKEY_API_ENDPOINT = "BRAINFM_API_ENDPOINT"
 ENVKEY_STREAM_ENDPOINT = "BRAINFM_STREAM_ENDPOINT"
-STATIONS_PATTERN = jmespath.compile("[*].[id, name, string_id]")
+STATIONS_PATTERN = jmespath.compile("[*].[id, name, string_id, length]")
 
 
 def validate_client(client: brainfm.Connection):
@@ -66,15 +66,32 @@ def details(client: brainfm.Connection):
 
 @cli.command()
 @click.pass_obj
-def ls(client: brainfm.Connection):
+@click.option("-a", is_flag=True, default=False)
+def ls(client: brainfm.Connection, a):
     """List stations"""
     validate_client(client)
     stations = client.list_stations()
-    headers = ["id", "name", "string_id"]
+    headers = ["id", "name", "string_id", "length"]
     data = sorted(STATIONS_PATTERN.search(stations))
+    ls_title = "Available Stations"
+    if a:
+        ls_title = "All Stations"
+    else:
+        ls_title = "Playable Stations"
+        data = [station for station in data if station[3]]
+    for i, station in enumerate(data[:]):
+        duration = int(station[3])
+        if duration == 0:
+            data[i][3] = "None"
+        elif duration == 60:
+            data[i][3] = "1 hr"
+        elif duration > 60:
+            data[i][3] = str(int(duration / 60)) + " hrs"
+        else:
+            data[i][3] = str(duration) + " mins"
     table = terminaltables.AsciiTable(
         table_data=[headers] + data,
-        title="Available Stations")
+        title=ls_title)
     print(table.table)
 
 
