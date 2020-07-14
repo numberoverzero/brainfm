@@ -73,7 +73,6 @@ def ls(client: brainfm.Connection, a):
     stations = client.list_stations()
     headers = ["id", "name", "string_id", "length"]
     data = sorted(STATIONS_PATTERN.search(stations))
-    ls_title = "Available Stations"
     if a:
         ls_title = "All Stations"
     else:
@@ -89,9 +88,7 @@ def ls(client: brainfm.Connection, a):
             data[i][3] = str(int(duration / 60)) + " hrs"
         else:
             data[i][3] = str(duration) + " mins"
-    table = terminaltables.AsciiTable(
-        table_data=[headers] + data,
-        title=ls_title)
+    table = terminaltables.AsciiTable(table_data=[headers] + data, title=ls_title)
     print(table.table)
 
 
